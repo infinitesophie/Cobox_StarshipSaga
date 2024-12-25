@@ -30,14 +30,24 @@
         function GetTelegramUser() {
             const user = window.Telegram.WebApp.initDataUnsafe?.user;
             if (user) {
-                return JSON.stringify({
+                /*return JSON.stringify({
                     username: user.username,
                     firstName: user.first_name,
                     lastName: user.last_name,
                     id: user.id
-                });
+                });*/
+                          unityInstance.SendMessage("FirebaseController", "OnTelegramUserReceived", JSON.stringify({
+                    username: user.username,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                    id: user.id
+                }));
+
             } else {
-                return JSON.stringify({ error: "No user data available" });
+
+                 unityInstance.SendMessage("FirebaseController", "OnTelegramUserReceived", JSON.stringify({ error: "No user data available" }))
+
+                //return JSON.stringify({ error: "No user data available" });
             }
         }
 
@@ -121,6 +131,8 @@
         if (docSnap.exists()) {
           const userData = docSnap.data();
           console.log("User data:", userData);
+          unityInstance.SendMessage("FirebaseController", "OnDataLoaded", JSON.stringify(userData));
+
           // You can process the user data as needed
         } else {
           console.log("No user data found for ID:", userId);
@@ -128,6 +140,70 @@
       } catch (error) {
         console.error("Error reading user data: ", error);
       }
+    }
+
+     // Function to fetch Telegram and Firestore user data
+    async function getTelegramAndLoadUserData(unityObjectName, unityCallbackName) {
+       /* const user = window.Telegram.WebApp.initDataUnsafe?.user;
+
+        if (!user) {
+            console.error("No Telegram user data available");
+            const errorResponse = JSON.stringify({ error: "No Telegram user data available" });
+            SendResponseToUnity(unityObjectName, unityCallbackName, errorResponse);
+            return;
+        }
+
+        // Extract Telegram user information
+        const telegramUserData = {
+            id: user.id,
+            username: user.username,
+            firstName: user.first_name,
+            lastName: user.last_name,
+        };*/
+
+        const telegramUserData = {
+            id: user.id ?? "user123",             
+            username: user.username ?? "anonymous", 
+            firstName: user.first_name ?? "John",   
+            lastName: user.last_name ?? "Doe",      
+};
+
+        console.log("Telegram User Data:", telegramUserData);
+
+        // Load Firestore data for this user
+        try {
+            const userRef = doc(db, "users", telegramUserData.id);
+            const docSnap = await getDoc(userRef);
+
+            let firestoreUserData = {};
+            if (docSnap.exists()) {
+                firestoreUserData = docSnap.data();
+                console.log("Firestore User Data:", firestoreUserData);
+            } else {
+                console.log("No Firestore data found for user ID:", telegramUserData.id);
+                await saveUserData(telegramUserData.id, telegramUserData.username, 0, 0); // Default highScore=0, tokenCoin=0
+                firestoreUserData = { name: telegramUserData.username, highScore: 0, tokenCoin: 0 };
+                console.log("New user data created:", firestoreUserData);
+            }
+
+            // Combine Telegram and Firestore data
+            const combinedData = { ...telegramUserData, ...firestoreUserData };
+            console.log("Combined User Data:", combinedData);
+
+            // Send combined data back to Unity
+            SendResponseToUnity(unityObjectName, unityCallbackName, JSON.stringify(combinedData));
+        } catch (error) {
+            console.error("Error loading Firestore user data:", error);
+            const errorResponse = JSON.stringify({ error: error.message, telegramUserData });
+            SendResponseToUnity(unityObjectName, unityCallbackName, errorResponse);
+        }
+    }
+
+    // Helper function to send a response back to Unity
+    function SendResponseToUnity(unityObjectName, unityCallbackName, data) {
+        if (typeof unityObjectName === "string" && typeof unityCallbackName === "string") {
+            window.unityInstance.SendMessage(unityObjectName, unityCallbackName, data);
+        }
     }
 
  
@@ -144,6 +220,8 @@
 
 
     <script>
+            let unityInstance;
+
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         // Mobile device style: fill the whole browser client area with the game canvas:
         var meta = document.createElement('meta');
@@ -159,17 +237,26 @@
         document.body.style.textAlign = "left";
       }
 
-      createUnityInstance(document.querySelector("#unity-canvas"), {
-        dataUrl: "Build/Webgl.data",
-        frameworkUrl: "Build/Webgl.framework.js",
-        codeUrl: "Build/Webgl.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "Space Adventure",
-        productVersion: "1.0",
-        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
-        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
-      });
+      // Initialize Unity WebGL
+        createUnityInstance(document.querySelector("#unity-canvas"), {
+            dataUrl: "Build/Webgl.data",
+            frameworkUrl: "Build/Webgl.framework.js",
+            codeUrl: "Build/Webgl.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "DefaultCompany",
+            productName: "Space Adventure",
+            productVersion: "1.0",
+        }).then(function(instance) {
+            // Once Unity is loaded, assign the instance to the global variable
+            unityInstance = instance;
+
+            // You can now call Unity methods, e.g., send initial data or make initial calls
+            console.log("Unity WebGL is loaded successfully.");
+
+            // Optional: You can call unityInstance.SendMessage here if needed
+        }).catch(function(error) {
+            console.error("Error initializing Unity WebGL: ", error);
+        });
     </script>
   </body>
 </html>
