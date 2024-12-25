@@ -21,6 +21,9 @@
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.ready();
             }
+
+                      LogTelegramUser();
+
         });
 
         // Function to get Telegram user data
@@ -41,6 +44,8 @@
         // Example of logging user data (optional)
         function LogTelegramUser() {
             const userData = GetTelegramUser();
+                      alert("Telegram User Data: " + userData);
+
             console.log("Telegram User Data:", userData);
         }
     </script>
