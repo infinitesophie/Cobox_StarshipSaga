@@ -15,6 +15,35 @@
  
         <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
+<script>
+        // Wait for the Telegram WebApp to be ready
+        window.addEventListener("DOMContentLoaded", () => {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+            }
+        });
+
+        // Function to get Telegram user data
+        function GetTelegramUser() {
+            const user = window.Telegram.WebApp.initDataUnsafe?.user;
+            if (user) {
+                return JSON.stringify({
+                    username: user.username,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                    id: user.id
+                });
+            } else {
+                return JSON.stringify({ error: "No user data available" });
+            }
+        }
+
+        // Example of logging user data (optional)
+        function LogTelegramUser() {
+            const userData = GetTelegramUser();
+            console.log("Telegram User Data:", userData);
+        }
+    </script>
 
      <!-- Telegram Login Button -->
   <script async src="https://telegram.org/js/telegram-widget.js?7"
@@ -40,6 +69,7 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
+
     console.log("Firebase initialized successfully");
 
     // Initialize Firestore
