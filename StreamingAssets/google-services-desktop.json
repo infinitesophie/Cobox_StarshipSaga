@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "881304934948",
+    "firebase_url": "https://starship-saga-default-rtdb.firebaseio.com",
+    "project_id": "starship-saga",
+    "storage_bucket": "starship-saga.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:881304934948:android:21a58f25dd08ad8f8d96b1",
+        "android_client_info": {
+          "package_name": "com.cobox.starlink"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWKkqbUvlQR5oA-N2NPmJo7nei-gvxBVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

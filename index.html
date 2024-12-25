@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Space Adventure</title>
+    
+
+  </head>
+  <body style="text-align: center; padding: 0; border: 0; margin: 0;">
+    <canvas id="unity-canvas" width=400 height=800 style="width: 400px; height: 800px; background: url('Build/Webgl.jpg') center / cover"></canvas>
+    <script src="Build/Webgl.loader.js"></script>
+     
+
+    <script>
+  // Skip ngrok warning when fetching data from ngrok server
+  window.onload = function() {
+    fetch('https://your-ngrok-url.ngrok.io', {
+      method: 'GET', // or 'POST'
+      headers: {
+        'ngrok-skip-browser-warning': 'true'
+      }
+    })
+    .then(response => response.json()) // Assuming the server returns JSON
+    .then(data => {
+      console.log(data);  // Handle the response data as needed
+    })
+    .catch(error => {
+      console.error('Error:', error);  // Handle errors
+    });
+  }
+</script>
+
+
+     <!-- Telegram Login Button -->
+  <script async src="https://telegram.org/js/telegram-widget.js?7"
+          data-telegram-login="coboxgames_bot"
+          data-size="large"
+          data-radius="10"
+          data-auth-callback="onTelegramAuth"
+          data-request-access="write"></script>
+    <script type="module">
+    // Import the necessary functions from the Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    // Your Firebase configuration object
+    const firebaseConfig = {
+      apiKey: "AIzaSyC72BuYShC1VTW6l-jbr25G9TzFVsKRmHY",
+      authDomain: "starship-saga.firebaseapp.com",
+      projectId: "starship-saga",
+      storageBucket: "starship-saga.firebasestorage.app",
+      messagingSenderId: "881304934948",
+      appId: "1:881304934948:web:b19621bdbb2a635b8d96b1"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    console.log("Firebase initialized successfully");
+
+    // Initialize Firestore
+    const db = getFirestore(app);
+
+    // Callback function for the Telegram Login Widget
+    async function onTelegramAuth(user) {
+      try {
+        console.log("Received Telegram user data:", user);
+
+      } catch (error) {
+        console.error("Error saving user data to Firestore:", error);
+      }
+    }
+
+    // Function to save user data
+    async function saveUserData(userId, name, highScore, tokenCoin) {
+      try {
+        // Reference to the Firestore document
+        const userRef = doc(db, "users", userId);
+
+        // Set the user data
+        await setDoc(userRef, {
+          name: name,
+          highScore: highScore,
+          tokenCoin: tokenCoin
+        });
+
+        console.log("User data saved successfully!");
+      } catch (error) {
+        console.error("Error saving user data: ", error);
+      }
+    }
+
+    // Function to load user data
+    async function loadUserData(userId) {
+      try {
+        // Reference to the Firestore document
+        const userRef = doc(db, "users", userId);
+
+        // Get the document
+        const docSnap = await getDoc(userRef);
+
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          console.log("User data:", userData);
+          // You can process the user data as needed
+        } else {
+          console.log("No user data found for ID:", userId);
+        }
+      } catch (error) {
+        console.error("Error reading user data: ", error);
+      }
+    }
+
+ 
+
+          window.loadUserData = loadUserData;
+          window.saveUserData = saveUserData;
+
+
+    // Test the functions (for demonstration purposes)
+    saveUserData("user123", "Jane Doe", 9000, 300);  // Save some test data
+    loadUserData("user123");  // Load the data we just saved
+    //fetchTelegramData()
+  </script>
+
+
+    <script>
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+
+        var canvas = document.querySelector("#unity-canvas");
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        canvas.style.position = "fixed";
+
+        document.body.style.textAlign = "left";
+      }
+
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        dataUrl: "Build/Webgl.data",
+        frameworkUrl: "Build/Webgl.framework.js",
+        codeUrl: "Build/Webgl.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "Space Adventure",
+        productVersion: "1.0",
+        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+      });
+    </script>
+  </body>
+</html>
