@@ -12,24 +12,8 @@
     <script src="Build/Webgl.loader.js"></script>
      
 
-    <script>
-  // Skip ngrok warning when fetching data from ngrok server
-  window.onload = function() {
-    fetch('https://your-ngrok-url.ngrok.io', {
-      method: 'GET', // or 'POST'
-      headers: {
-        'ngrok-skip-browser-warning': 'true'
-      }
-    })
-    .then(response => response.json()) // Assuming the server returns JSON
-    .then(data => {
-      console.log(data);  // Handle the response data as needed
-    })
-    .catch(error => {
-      console.error('Error:', error);  // Handle errors
-    });
-  }
-</script>
+ 
+        <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
 
      <!-- Telegram Login Button -->
