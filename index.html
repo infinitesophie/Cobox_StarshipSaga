@@ -6,59 +6,37 @@
     <title>Unity WebGL Player | Space Adventure</title>
     
 
+       <!-- Include Firebase SDKs -->
+    <script  type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
+    <script  type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"></script>
+    <script  type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"></script>
+    <script type="module">
+        // Firebase initialization flag
+        let firebaseInitialized = false;
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC72BuYShC1VTW6l-jbr25G9TzFVsKRmHY",
+            authDomain: "starship-saga.firebaseapp.com",
+            projectId: "starship-saga",
+            storageBucket: "starship-saga.firebasestorage.app",
+            messagingSenderId: "881304934948",
+            appId: "1:881304934948:web:b19621bdbb2a635b8d96b1"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        console.log("Firebase initialized successfully");
+
+        // Set the Firebase initialized flag to true
+        firebaseInitialized = true;
+    </script>
   </head>
   <body style="text-align: center; padding: 0; border: 0; margin: 0;">
     <canvas id="unity-canvas" width=400 height=800 style="width: 400px; height: 800px; background: url('Build/Webgl.jpg') center / cover"></canvas>
     <script src="Build/Webgl.loader.js"></script>
      
-
  
-        <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
-
-<script>
-        // Wait for the Telegram WebApp to be ready
-        window.addEventListener("DOMContentLoaded", () => {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.ready();
-            }
-
-                      LogTelegramUser();
-
-        });
-
-        // Function to get Telegram user data
-        function GetTelegramUser() {
-            const user = window.Telegram.WebApp.initDataUnsafe?.user;
-            if (user) {
-                /*return JSON.stringify({
-                    username: user.username,
-                    firstName: user.first_name,
-                    lastName: user.last_name,
-                    id: user.id
-                });*/
-                          unityInstance.SendMessage("FirebaseController", "OnTelegramUserReceived", JSON.stringify({
-                    username: user.username,
-                    firstName: user.first_name,
-                    lastName: user.last_name,
-                    id: user.id
-                }));
-
-            } else {
-
-                 unityInstance.SendMessage("FirebaseController", "OnTelegramUserReceived", JSON.stringify({ error: "No user data available" }))
-
-                //return JSON.stringify({ error: "No user data available" });
-            }
-        }
-
-        // Example of logging user data (optional)
-        function LogTelegramUser() {
-            const userData = GetTelegramUser();
-                      alert("Telegram User Data: " + userData);
-
-            console.log("Telegram User Data:", userData);
-        }
-    </script>
 
      <!-- Telegram Login Button -->
   <script async src="https://telegram.org/js/telegram-widget.js?7"
@@ -84,7 +62,6 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-
     console.log("Firebase initialized successfully");
 
     // Initialize Firestore
@@ -99,6 +76,22 @@
         console.error("Error saving user data to Firestore:", error);
       }
     }
+
+    async function authenticateUser() {
+    try {
+        const firebaseUser = await firebase.auth().signInAnonymously();
+        console.log("User authenticated:", firebaseUser);
+
+        // Get Firebase ID Token after successful sign-in
+        const idToken = await firebaseUser.user.getIdToken();
+        console.log("Firebase ID Token:", idToken);
+
+        // Send the token to Unity
+        sendIdTokenToUnity(idToken);
+    } catch (error) {
+        console.error("Error authenticating user:", error);
+    }
+}
 
     // Function to save user data
     async function saveUserData(userId, name, highScore, tokenCoin) {
@@ -131,8 +124,6 @@
         if (docSnap.exists()) {
           const userData = docSnap.data();
           console.log("User data:", userData);
-          unityInstance.SendMessage("FirebaseController", "OnDataLoaded", JSON.stringify(userData));
-
           // You can process the user data as needed
         } else {
           console.log("No user data found for ID:", userId);
@@ -140,70 +131,6 @@
       } catch (error) {
         console.error("Error reading user data: ", error);
       }
-    }
-
-     // Function to fetch Telegram and Firestore user data
-    async function getTelegramAndLoadUserData(unityObjectName, unityCallbackName) {
-       /* const user = window.Telegram.WebApp.initDataUnsafe?.user;
-
-        if (!user) {
-            console.error("No Telegram user data available");
-            const errorResponse = JSON.stringify({ error: "No Telegram user data available" });
-            SendResponseToUnity(unityObjectName, unityCallbackName, errorResponse);
-            return;
-        }
-
-        // Extract Telegram user information
-        const telegramUserData = {
-            id: user.id,
-            username: user.username,
-            firstName: user.first_name,
-            lastName: user.last_name,
-        };*/
-
-        const telegramUserData = {
-            id: user.id ?? "user123",             
-            username: user.username ?? "anonymous", 
-            firstName: user.first_name ?? "John",   
-            lastName: user.last_name ?? "Doe",      
-};
-
-        console.log("Telegram User Data:", telegramUserData);
-
-        // Load Firestore data for this user
-        try {
-            const userRef = doc(db, "users", telegramUserData.id);
-            const docSnap = await getDoc(userRef);
-
-            let firestoreUserData = {};
-            if (docSnap.exists()) {
-                firestoreUserData = docSnap.data();
-                console.log("Firestore User Data:", firestoreUserData);
-            } else {
-                console.log("No Firestore data found for user ID:", telegramUserData.id);
-                await saveUserData(telegramUserData.id, telegramUserData.username, 0, 0); // Default highScore=0, tokenCoin=0
-                firestoreUserData = { name: telegramUserData.username, highScore: 0, tokenCoin: 0 };
-                console.log("New user data created:", firestoreUserData);
-            }
-
-            // Combine Telegram and Firestore data
-            const combinedData = { ...telegramUserData, ...firestoreUserData };
-            console.log("Combined User Data:", combinedData);
-
-            // Send combined data back to Unity
-            SendResponseToUnity(unityObjectName, unityCallbackName, JSON.stringify(combinedData));
-        } catch (error) {
-            console.error("Error loading Firestore user data:", error);
-            const errorResponse = JSON.stringify({ error: error.message, telegramUserData });
-            SendResponseToUnity(unityObjectName, unityCallbackName, errorResponse);
-        }
-    }
-
-    // Helper function to send a response back to Unity
-    function SendResponseToUnity(unityObjectName, unityCallbackName, data) {
-        if (typeof unityObjectName === "string" && typeof unityCallbackName === "string") {
-            window.unityInstance.SendMessage(unityObjectName, unityCallbackName, data);
-        }
     }
 
  
@@ -220,8 +147,6 @@
 
 
     <script>
-            let unityInstance;
-
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         // Mobile device style: fill the whole browser client area with the game canvas:
         var meta = document.createElement('meta');
@@ -237,26 +162,19 @@
         document.body.style.textAlign = "left";
       }
 
-      // Initialize Unity WebGL
-        createUnityInstance(document.querySelector("#unity-canvas"), {
-            dataUrl: "Build/Webgl.data",
-            frameworkUrl: "Build/Webgl.framework.js",
-            codeUrl: "Build/Webgl.wasm",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "DefaultCompany",
-            productName: "Space Adventure",
-            productVersion: "1.0",
-        }).then(function(instance) {
-            // Once Unity is loaded, assign the instance to the global variable
-            unityInstance = instance;
-
-            // You can now call Unity methods, e.g., send initial data or make initial calls
-            console.log("Unity WebGL is loaded successfully.");
-
-            // Optional: You can call unityInstance.SendMessage here if needed
-        }).catch(function(error) {
-            console.error("Error initializing Unity WebGL: ", error);
-        });
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        dataUrl: "Build/Webgl.data",
+        frameworkUrl: "Build/Webgl.framework.js",
+        codeUrl: "Build/Webgl.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "Space Adventure",
+        productVersion: "1.0",
+        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+      });
     </script>
+
+
   </body>
 </html>
