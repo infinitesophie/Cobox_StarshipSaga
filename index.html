@@ -5,39 +5,16 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | Space Adventure</title>
     
-        <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
-       <!-- Include Firebase SDKs -->
-    <script  type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
-    <script  type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"></script>
-    <script  type="module" src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"></script>
-    <script type="module">
-        // Firebase initialization flag
-        let firebaseInitialized = false;
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyC72BuYShC1VTW6l-jbr25G9TzFVsKRmHY",
-            authDomain: "starship-saga.firebaseapp.com",
-            projectId: "starship-saga",
-            storageBucket: "starship-saga.firebasestorage.app",
-            messagingSenderId: "881304934948",
-            appId: "1:881304934948:web:b19621bdbb2a635b8d96b1"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        console.log("Firebase initialized successfully");
-
-        // Set the Firebase initialized flag to true
-        firebaseInitialized = true;
-    </script>
   </head>
   <body style="text-align: center; padding: 0; border: 0; margin: 0;">
     <canvas id="unity-canvas" width=400 height=800 style="width: 400px; height: 800px; background: url('Build/Webgl.jpg') center / cover"></canvas>
     <script src="Build/Webgl.loader.js"></script>
      
+
  
+        <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+
 
      <!-- Telegram Login Button -->
   <script async src="https://telegram.org/js/telegram-widget.js?7"
@@ -77,22 +54,6 @@
         console.error("Error saving user data to Firestore:", error);
       }
     }
-
-    async function authenticateUser() {
-    try {
-        const firebaseUser = await firebase.auth().signInAnonymously();
-        console.log("User authenticated:", firebaseUser);
-
-        // Get Firebase ID Token after successful sign-in
-        const idToken = await firebaseUser.user.getIdToken();
-        console.log("Firebase ID Token:", idToken);
-
-        // Send the token to Unity
-        sendIdTokenToUnity(idToken);
-    } catch (error) {
-        console.error("Error authenticating user:", error);
-    }
-}
 
     // Function to save user data
     async function saveUserData(userId, name, highScore, tokenCoin) {
@@ -175,7 +136,5 @@
         // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
       });
     </script>
-
-
   </body>
 </html>
